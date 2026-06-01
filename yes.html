@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>И я тебя очень сильно люблю</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-top: #2a0914;
+      --bg-mid: #14050b;
+      --bg-bottom: #030103;
+      --panel: rgba(36, 9, 20, 0.62);
+      --panel-border: rgba(255, 188, 210, 0.16);
+      --text-main: #fff2f7;
+      --shadow: rgba(0, 0, 0, 0.42);
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top, rgba(255, 117, 167, 0.14), transparent 28%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 55%, var(--bg-bottom) 100%);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .scene {
+      position: relative;
+      width: 100vw;
+      min-height: 100vh;
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .float-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .float {
+      position: absolute;
+      bottom: -12vh;
+      left: var(--left);
+      color: rgba(255, 190, 214, 0.88);
+      font-size: var(--size);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+      animation: rise var(--duration) linear infinite;
+      animation-delay: var(--delay);
+      opacity: 0.85;
+      white-space: nowrap;
+    }
+
+    .float.heart {
+      color: rgba(255, 115, 166, 0.9);
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding:
+        max(28px, env(safe-area-inset-top))
+        18px
+        max(24px, env(safe-area-inset-bottom));
+    }
+
+    .message {
+      width: min(94vw, 720px);
+      padding: 18px;
+      border-radius: 26px;
+      border: 1px solid var(--panel-border);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    .message h1 {
+      font-size: clamp(30px, 5vw, 58px);
+      line-height: 1.08;
+      text-wrap: balance;
+      text-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+    }
+
+    .media-card {
+      width: min(92vw, 430px);
+      border-radius: 28px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 197, 218, 0.2);
+      background: rgba(18, 5, 10, 0.86);
+      box-shadow: 0 30px 80px var(--shadow);
+    }
+
+    .media-card img {
+      display: block;
+      width: 100%;
+      max-height: 62vh;
+      object-fit: contain;
+      background: #12050a;
+    }
+
+    @keyframes rise {
+      0% {
+        transform: translate3d(0, 0, 0) scale(0.8) rotate(0deg);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 0.9;
+      }
+
+      100% {
+        transform: translate3d(var(--drift), -125vh, 0) scale(1.15) rotate(12deg);
+        opacity: 0;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .content {
+        justify-content: flex-start;
+        gap: 18px;
+        padding-top: max(18px, env(safe-area-inset-top));
+      }
+
+      .message {
+        padding: 16px 14px;
+        border-radius: 22px;
+      }
+
+      .message h1 {
+        font-size: clamp(26px, 8vw, 38px);
+      }
+
+      .media-card {
+        width: min(92vw, 360px);
+        border-radius: 22px;
+      }
+
+      .media-card img {
+        max-height: 42vh;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene">
+    <div class="float-layer" aria-hidden="true">
+      <span class="float heart" style="--left: 4%; --size: 28px; --duration: 13s; --delay: -1s; --drift: 30px;">&#10084;</span>
+      <span class="float" style="--left: 12%; --size: 24px; --duration: 15s; --delay: -6s; --drift: -40px;">love</span>
+      <span class="float heart" style="--left: 18%; --size: 20px; --duration: 12s; --delay: -3s; --drift: 55px;">&#10084;</span>
+      <span class="float" style="--left: 27%; --size: 30px; --duration: 18s; --delay: -8s; --drift: -35px;">love</span>
+      <span class="float heart" style="--left: 35%; --size: 26px; --duration: 14s; --delay: -4s; --drift: 42px;">&#10084;</span>
+      <span class="float" style="--left: 44%; --size: 22px; --duration: 16s; --delay: -10s; --drift: -50px;">love</span>
+      <span class="float heart" style="--left: 53%; --size: 34px; --duration: 17s; --delay: -2s; --drift: 28px;">&#10084;</span>
+      <span class="float" style="--left: 61%; --size: 20px; --duration: 12s; --delay: -7s; --drift: -24px;">love</span>
+      <span class="float heart" style="--left: 69%; --size: 24px; --duration: 15s; --delay: -5s; --drift: 46px;">&#10084;</span>
+      <span class="float" style="--left: 76%; --size: 32px; --duration: 19s; --delay: -12s; --drift: -30px;">love</span>
+      <span class="float heart" style="--left: 84%; --size: 22px; --duration: 13s; --delay: -9s; --drift: 38px;">&#10084;</span>
+      <span class="float" style="--left: 91%; --size: 21px; --duration: 14s; --delay: -11s; --drift: -44px;">love</span>
+    </div>
+
+    <div class="content">
+      <div class="message">
+        <h1>И я тебя очень сильно люблю</h1>
+      </div>
+
+      <div class="media-card">
+        <img src="video.gif" alt="Love animation">
+      </div>
+    </div>
+  </div>
+</body>
+</html>

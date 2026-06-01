@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ты меня любишь?</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-top: #340d1b;
+      --bg-mid: #19060c;
+      --bg-bottom: #020001;
+      --card: rgba(34, 8, 17, 0.76);
+      --border: rgba(255, 180, 204, 0.18);
+      --text-main: #fff1f6;
+      --text-soft: #ffc6d8;
+      --yes-start: #ff7fa9;
+      --yes-end: #ff4b86;
+      --no-start: #50323d;
+      --no-end: #6b4150;
+    }
+
+    body {
+      overflow: hidden;
+      min-height: 100vh;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, var(--bg-top) 0%, var(--bg-mid) 45%, var(--bg-bottom) 100%);
+      color: var(--text-main);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+
+    .panel {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(92vw, 520px);
+      padding: 28px 24px 110px;
+      border-radius: 28px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    h1 {
+      margin-bottom: 12px;
+      font-size: clamp(30px, 5vw, 44px);
+      line-height: 1.05;
+    }
+
+    p {
+      margin-bottom: 22px;
+      color: var(--text-soft);
+      font-size: 16px;
+    }
+
+    .hint {
+      min-height: 24px;
+      margin-bottom: 16px;
+      color: #ffd7e4;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+
+    .hint.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .actions {
+      position: relative;
+      height: 72px;
+    }
+
+    .choice {
+      position: absolute;
+      top: 0;
+      min-width: 130px;
+      min-height: 52px;
+      padding: 14px 22px;
+      border: 0;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff8fb;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, filter 0.22s ease, opacity 0.22s ease;
+    }
+
+    .button {
+      left: calc(50% - 145px);
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--yes-start), var(--yes-end));
+      box-shadow: 0 16px 32px rgba(255, 87, 144, 0.35);
+      transform-origin: center;
+    }
+
+    .button:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+
+    .runaway {
+      left: calc(50% + 15px);
+      background: linear-gradient(135deg, var(--no-start), var(--no-end));
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.22);
+      transform-origin: center;
+    }
+
+    @media (max-width: 560px) {
+      .panel {
+        width: min(94vw, 420px);
+        padding: 22px 16px calc(152px + env(safe-area-inset-bottom));
+        border-radius: 24px;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+        font-size: clamp(28px, 8vw, 34px);
+      }
+
+      p {
+        margin-bottom: 16px;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .hint {
+        min-height: 38px;
+        margin-bottom: 14px;
+        font-size: 13px;
+      }
+
+      .actions {
+        height: 118px;
+      }
+
+      .button,
+      .runaway {
+        left: 50%;
+        min-width: min(74vw, 240px);
+      }
+
+      .button {
+        top: 0;
+      }
+
+      .runaway {
+        top: 60px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <div class="panel">
+    <h1 id="questionTitle">Ты меня любишь?</h1>
+    <p id="questionText">Выбирай внимательно. Я уже знаю, какой ответ хочу услышать</p>
+    <div class="hint" id="hint">Попробуй нажать «Нет» ещё раз</div>
+
+    <div class="actions" id="actions">
+      <a class="button choice" id="yesButton" href="yes.html">Да</a>
+      <button class="runaway choice" id="noButton" type="button">Нет</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("c");
+    const ctx = canvas.getContext("2d");
+    const questionTitle = document.getElementById("questionTitle");
+    const questionText = document.getElementById("questionText");
+    const yesButton = document.getElementById("yesButton");
+    const noButton = document.getElementById("noButton");
+    const hint = document.getElementById("hint");
+
+    const TEXT = "I love you";
+    const NUM_STEPS = 160;
+    const noPrompts = [
+      {
+        title: "Ты меня любишь?",
+        text: "Выбирай внимательно. Я уже знаю, какой ответ хочу услышать",
+        center: "Ты меня любишь?",
+        hint: "Попробуй нажать «Нет» ещё раз"
+      },
+      {
+        title: "Ты уверена?",
+        text: "Это прозвучало не очень убедительно",
+        center: "Ты уверена?",
+        hint: "Ответ «Да» уже выглядит лучше"
+      },
+      {
+        title: "Точно уверена?",
+        text: "Потому что моё сердце не согласно с этой кнопкой",
+        center: "Точно уверена?",
+        hint: "Кнопку «Да» всё сложнее игнорировать"
+      },
+      {
+        title: "Может ещё подумаешь?",
+        text: "Может, дашь розовой кнопке ещё один шанс",
+        center: "Подумай ещё",
+        hint: "Кнопка «Нет» теряет уверенность"
+      },
+      {
+        title: "Последний шанс сказать нет?",
+        text: "Похоже, этот вариант всё-таки проигрывает",
+        center: "Последний шанс?",
+        hint: "Ещё одно «Нет», и я спрошу снова"
+      },
+      {
+        title: "А теперь ответь?",
+        text: "Мне кажется, мы оба уже знаем, какую кнопку нажать",
+        center: "А теперь ответь?",
+        hint: "Вселенная настойчиво рекомендует «Да»"
+      }
+    ];
+    let angle = 0;
+    let noClicks = 0;
+    let hintTimer = null;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+
+    function heartX(t) {
+      return 16 * Math.pow(Math.sin(t), 3);
+    }
+
+    function heartY(t) {
+      return (
+        13 * Math.cos(t) -
+        5 * Math.cos(2 * t) -
+        2 * Math.cos(3 * t) -
+        Math.cos(4 * t)
+      );
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cx = canvas.width / 2;
+      const isMobile = canvas.width <= 560;
+      const cy = canvas.height / 2 - (isMobile ? 116 : 60);
+      const heartScale = isMobile ? 9.2 : 13;
+      const pulse = 1 + 0.1 * Math.sin(angle * 2);
+
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i < NUM_STEPS; i++) {
+        const t = (Math.PI * 2 * i) / NUM_STEPS;
+        const x = heartX(t) * heartScale * pulse;
+        const y = -heartY(t) * heartScale * pulse;
+
+        const alpha = 0.45 + 0.55 * Math.sin(angle + i * 0.12);
+        const baseFont = isMobile ? 10 : 13;
+        const swing = isMobile ? 4.5 : 7;
+        const fontSize = baseFont + swing * Math.sin(angle * 1.4 + i * 0.18);
+
+        ctx.font = `bold ${fontSize.toFixed(1)}px Arial`;
+        ctx.fillStyle = `rgba(255, 85, 135, ${Math.max(0.2, alpha).toFixed(2)})`;
+        ctx.fillText(TEXT, cx + x, cy + y);
+      }
+
+      ctx.font = isMobile ? "bold 24px Arial" : "bold 34px Arial";
+      ctx.fillStyle = "rgba(255, 236, 242, 0.96)";
+      ctx.fillText(noPrompts[Math.min(noClicks, noPrompts.length - 1)].center, cx, cy);
+
+      angle += 0.03;
+      requestAnimationFrame(draw);
+    }
+
+    function showHint() {
+      hint.classList.add("is-visible");
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(() => {
+        hint.classList.remove("is-visible");
+      }, 900);
+    }
+
+    function updateScene() {
+      const step = Math.min(noClicks, noPrompts.length - 1);
+      const prompt = noPrompts[step];
+      const yesScale = 1 + step * 0.18;
+      const noScale = Math.max(0.35, 1 - step * 0.12);
+      const noOpacity = Math.max(0.35, 1 - step * 0.1);
+
+      questionTitle.textContent = prompt.title;
+      questionText.textContent = prompt.text;
+      hint.textContent = prompt.hint;
+
+      if (window.innerWidth <= 560) {
+        yesButton.style.transform = `translateX(-50%) scale(${yesScale})`;
+        noButton.style.transform = `translateX(-50%) scale(${noScale})`;
+      } else {
+        yesButton.style.transform = `scale(${yesScale})`;
+        noButton.style.transform = `scale(${noScale})`;
+      }
+      yesButton.style.boxShadow = `0 16px 32px rgba(255, 87, 144, ${0.35 + step * 0.08})`;
+      noButton.style.opacity = `${noOpacity}`;
+    }
+
+    function handleNo(event) {
+      event.preventDefault();
+      if (noClicks < noPrompts.length - 1) {
+        noClicks += 1;
+      }
+      updateScene();
+      showHint();
+    }
+
+    noButton.addEventListener("pointerdown", handleNo);
+    resizeCanvas();
+    updateScene();
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      updateScene();
+    });
+    draw();
+  </script>
+</body>
+</html>
